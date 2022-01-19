@@ -9,7 +9,9 @@ int n_Sum(int n){
     for (int i = 1; i <= n;i++){
         dp[i] = dp[i - 1] + i;
     }
-    return dp[n];
+    int result = dp[n];
+    free(dp);
+    return result;
 }
 
 //using math formula
