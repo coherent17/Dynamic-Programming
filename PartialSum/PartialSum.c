@@ -1,12 +1,3 @@
-/*
-    Problem:
-    Find the sum of the first n natual number.
-
-    Objective function:
-    F(i) is the sum of the first i natual number
-    F(n) = F(n-1) + n
-
-*/
 #include <stdio.h>
 #include <stdlib.h>
 
