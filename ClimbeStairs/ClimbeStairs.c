@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//time complexity: O(n), space complexity: O(n)
+
 int climbStairs(int n){
     int *dp = malloc(sizeof(int) * (n + 1));
 
