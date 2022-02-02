@@ -1,15 +1,11 @@
 CC = gcc
 CFLAGS = -g -Wall
-BIN = ClimbeStairs ClimbeStairsOptimized
+BIN = ClimbeStairs ClimbeStairs_2_steps_SpatialOptimized ClimbeStairs_3_steps ClimbeStairs_k_steps
 
 all: $(BIN)
 
 %:%.c
 	$(CC) $(CFLAGS) $< -o $@
-
-do:
-	./ClimbeStairs
-	./ClimbeStairsOptimized
 
 clean:
 	rm $(BIN)
