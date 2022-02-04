@@ -4,7 +4,6 @@
 
 #define printDPMode 1
 
-
 void print_dp(int *dp, int size){
     for(int i = 0; i < size; i++){
         printf("%d ", dp[i]);
