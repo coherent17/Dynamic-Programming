@@ -708,3 +708,451 @@ int main(){
 	return 0;
 }
 ```
+
+## Unique Paths Problem(Combinatorial Problem)
+
+There is a robot on an $m \times n$ grid. The robot is initially located at the top-left corner (i.e., $grid[0][0]$). The robot tries to move to the bottom-right corner (i.e., $grid[m - 1][n - 1]$). The robot can only move either down or right at any point in time.
+
+Given the two integers $m$ and $n$, return the number of possible unique paths that the robot can take to reach the bottom-right corner.
+
+![](https://i.imgur.com/Nus5Dhk.png)
+
+簡單來說就是從左上要走到右下，每次只能選擇往又或是往下，看從起點到終點有多少走法。
+
+推導關係式:
+因為座標是二維空間的，因此需要兩個變數才能定出所在的方格的位置。
+*    定義$F(i,j)$為所有抵達$(i,j)$這個方格的方法數。
+*    Base Cases:
+        *    假如給定的grid為$1 \times 1$，則自己就是終點，所以算為一種方法數，因此$F(0,0) = 1$
+        *    假如給定的grid為$2 \times 2$，則從$(0,0)$抵達$(1,1)$有兩種方法，先右再下或是先下再右，因此$F(1,1) = 2$
+*    關係式:假如我現在$(i,j)$的位置，那它的來源必為該格的往上一格$(i-1,j)$或是往左一格$(i,j-1)$，因此可以推得下式:
+\begin{gather*} F(i,j) = F(i-1,j) + F(i,j-1) \end{gather*}
+
+要特別注意哪些的$(i,j)$是不能直接套用$F(i,j) = F(i-1,j) + F(i,j-1)$
+*    1. Base Case: $(0,0)$
+*    2. 第一行$(i=0,j>0)$的時候，沒有更上面的格子可以到達這樣的$(i,j)$
+*    3. 第一列$(j=0,i>0)$的時候，沒有更左邊的格子可以到達這樣的$(i,j)$
+*    4. 其餘的直接使用$F(i,j) = F(i-1,j) + F(i,j-1)$即可
+
+code如下:
+```c=
+#include <stdio.h>
+#include <stdlib.h>
+
+void freeMemory(int **array, int m){
+	for(int i = 0; i < m; i++){
+		free(array[i]);
+	}
+	free(array);
+}
+
+int UniquePaths(int m, int n){
+
+	//allocate 2D array
+	int **dp = malloc(sizeof(int *) * m);
+	for(int i = 0; i < m; i++){
+		dp[i] = malloc(sizeof(int) * n);
+	}
+
+	//Base cases:
+	dp[0][0] = 1;
+
+	//Inductive
+	for(int i = 0; i < m; i++){
+		for(int j = 0; j < n; j++){
+
+			//skip the base case
+			if(i==0 && j==0) continue;
+
+			//edge case if i > 0, j = 0, only top block can go to (i,j)
+			else if(i > 0 && j==0) dp[i][j] = dp[i-1][j];
+
+			//edge case if i = 0, j > 0, only left block can go to (i,j)
+			else if(i==0 && j > 0) dp[i][j] = dp[i][j-1];
+
+			//F(i,j) = F(i-1,j) + F(i,j-1)
+			else dp[i][j] = dp[i-1][j] + dp[i][j-1];
+
+		}
+	}
+
+	int result = dp[m-1][n-1];
+	freeMemory(dp,m);
+	return result;
+}
+
+int main(){
+	printf("%d \n", UniquePaths(1,1));
+	printf("%d \n", UniquePaths(3,4));
+	printf("%d \n", UniquePaths(3,7));
+	return 0;
+}
+```
+
+### Advanced Discussion
+
+#### <font size=5> 之中有些格子是不能經過的 </font>
+
+A robot is located at the top-left corner of $m \times n$ grid (marked 'Start' in the diagram below).
+
+The robot can only move either down or right at any point in time. The robot is trying to reach the bottom-right corner of the grid (marked 'Finish' in the diagram below).
+
+Now consider if some obstacles are added to the grids. How many unique paths would there be?
+
+An obstacle and space is marked as 1 and 0 respectively in the grid.
+![](https://i.imgur.com/2bhmMkq.png)
+那因為不能抵達那些有障礙物的格子，因此將該格的$F(i,j)$設為0，便能夠解決此問題。
+
+code如下:
+```c=
+#include <stdio.h>
+#include <stdlib.h>
+
+void freeMemory(int **array, int m){
+	for(int i = 0; i < m; i++){
+		free(array[i]);
+	}
+	free(array);
+}
+
+int **constructGrid(int m, int n){
+	int **grid = malloc(sizeof(int *) * m);
+	for(int i = 0; i < m; i++){
+		grid[i] = malloc(sizeof(int) * n);
+	}
+
+
+	//initialize to zero
+	for(int i = 0; i < m; i++){
+		for(int j = 0; j < n; j++){
+			grid[i][j] = 0;
+		}
+	}
+	return grid;
+}
+
+int uniquePathsWithObstacles(int** grid, int m, int n){
+	//allocate 2D array
+	int **dp = malloc(sizeof(int *) * m);
+	for(int i = 0; i < m; i++){
+		dp[i] = malloc(sizeof(int) * n);
+	}
+
+	//Base cases:
+	dp[0][0] = 1;
+
+	//Inductive
+	for(int i = 0; i < m; i++){
+		for(int j = 0; j < n; j++){
+
+			//if there exist a obstacle in grid[i][j]
+			if(grid[i][j] == 1){
+				dp[i][j] = 0;
+				continue;
+			}
+
+			//skip the base case
+			if(i==0 && j==0) continue;
+
+			//edge case if i > 0, j = 0, only top block can go to (i,j)
+			else if(i > 0 && j==0) dp[i][j] = dp[i-1][j];
+
+			//edge case if i = 0, j > 0, only left block can go to (i,j)
+			else if(i==0 && j > 0) dp[i][j] = dp[i][j-1];
+
+			//F(i,j) = F(i-1,j) + F(i,j-1)
+			else dp[i][j] = dp[i-1][j] + dp[i][j-1];
+
+		}
+	}
+	int result = dp[m-1][n-1];
+	freeMemory(dp,m);
+	return result;
+}
+
+
+int main(){
+
+	int **grid1 = constructGrid(3,3);
+	int **grid2 = constructGrid(2,2);
+	int **grid3 = constructGrid(1,1);
+	int **grid4 = constructGrid(3,4);
+
+	//set the obstacle
+	grid1[1][1] = 1;
+
+	grid2[0][1] = 1;
+
+	grid3[0][0] = 1;
+	
+	grid4[1][2] = 1;
+	grid4[1][3] = 1;
+
+    printf("%d\n", uniquePathsWithObstacles(grid1, 3, 3));
+    printf("%d\n", uniquePathsWithObstacles(grid2, 2, 2));
+    printf("%d\n", uniquePathsWithObstacles(grid3, 1, 1));
+    printf("%d\n", uniquePathsWithObstacles(grid4, 3, 4));
+    freeMemory(grid1,3);
+    freeMemory(grid2,2);
+    freeMemory(grid3,1);
+    freeMemory(grid4,3);
+	return 0;
+}
+```
+
+## Unique Paths Problem(Optimization Problem)
+
+現在的grid存的是經過該格能夠拿到的錢錢，每個格子經過都可以賺到相對應的錢，如何走才能得到最大獲利 
+*    關係式:假如我現在$(i,j)$的位置，那它的來源必為該格的往上一格$(i-1,j)$或是往左一格$(i,j-1)$，要選多的那邊走，再加上踏到$(i,j)$的獲利，因此可以推得下式:
+\begin{gather*} F(i,j) = grid[i][j] +  max(F(i-1,j) + F(i,j-1)) \end{gather*}
+
+code如下:
+```c=
+#include <stdio.h>
+#include <stdlib.h>
+
+int max(int a, int b){
+	return a > b ? a : b;
+}
+
+void freeMemory(int **array, int m){
+	for(int i = 0; i < m; i++){
+		free(array[i]);
+	}
+	free(array);
+}
+
+int **constructGrid(int m, int n){
+	int **grid = malloc(sizeof(int *) * m);
+	for(int i = 0; i < m; i++){
+		grid[i] = malloc(sizeof(int) * n);
+	}
+	return grid;
+}
+
+int uniquePathsMaxProfit(int** grid, int m, int n){
+	//allocate 2D array
+	int **dp = malloc(sizeof(int *) * m);
+	for(int i = 0; i < m; i++){
+		dp[i] = malloc(sizeof(int) * n);
+	}
+
+	dp[0][0] = 0;
+
+	//Inductive
+	for(int i = 0; i < m; i++){
+		for(int j = 0; j < n; j++){
+
+			//skip the base case
+			if(i==0 && j==0) continue;
+
+			//edge case if i > 0, j = 0, only top block can go to (i,j)
+			else if(i > 0 && j==0) dp[i][j] = grid[i][j] +  dp[i-1][j];
+
+			//edge case if i = 0, j > 0, only left block can go to (i,j)
+			else if(i==0 && j > 0) dp[i][j] = grid[i][j] + dp[i][j-1];
+
+			//F(i,j) = grid[i][j] + max(F(i-1,j) , F(i,j-1)) 
+			else dp[i][j] = grid[i][j] + max(dp[i-1][j] , dp[i][j-1]);
+
+		}
+	}
+	int result = dp[m-1][n-1];
+	freeMemory(dp,m);
+	return result;
+}
+
+
+int main(){
+
+	int **grid = constructGrid(3,4);
+
+	//set the profit
+	grid[0][0] = 0, grid[0][1] = 2, grid[0][2] = 2, grid[0][3] = 1;
+	grid[1][0] = 3, grid[1][1] = 1, grid[1][2] = 1, grid[1][3] = 1;
+	grid[2][0] = 4, grid[2][1] = 4, grid[2][2] = 2, grid[2][3] = 0;
+
+    printf("%d\n", uniquePathsMaxProfit(grid, 3, 4));
+
+    //reset the grid
+    grid[0][0] = 0, grid[0][1] = 2, grid[0][2] = 2, grid[0][3] = 50;
+	grid[1][0] = 3, grid[1][1] = 1, grid[1][2] = 1, grid[1][3] = 100;
+	grid[2][0] = 4, grid[2][1] = 4, grid[2][2] = 2, grid[2][3] = 0;
+
+	printf("%d\n", uniquePathsMaxProfit(grid, 3, 4));
+
+    freeMemory(grid,3);
+	return 0;
+}
+```
+
+### Advanced Discussion
+到這邊已經可以算出最大可以獲得多少錢了，但是仍然不知道實際上經過的路徑是什麼，接下來要想辦法紀錄所經過的路徑是什麼。透過已經計算好的dp array從終點往前遞迴式的回推便能夠找到經過的路徑為何。
+
+code如下:
+```c=
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_PATH_LENGTH 6
+#define PRINTDPMODE 0
+
+typedef struct _position{
+	int x;
+	int y;
+}position;
+
+//global variable
+int path_index = 0;
+position path[MAX_PATH_LENGTH];
+
+int max(int a, int b){
+	return a > b ? a : b;
+}
+
+void freeMemory(int **array, int m){
+	for(int i = 0; i < m; i++){
+		free(array[i]);
+	}
+	free(array);
+}
+
+int **constructGrid(int m, int n){
+	int **grid = malloc(sizeof(int *) * m);
+	for(int i = 0; i < m; i++){
+		grid[i] = malloc(sizeof(int) * n);
+	}
+	return grid;
+}
+
+int **initArray(int **array, int row, int col){
+	for(int i = 0; i < row; i++){
+		for(int j = 0; j < col; j++){
+			array[i][j] = 0;
+		}
+	}
+	return array;
+}
+
+void print2DArray(int **array, int row, int col){
+	for(int i = 0; i < row; i++){
+		for(int j = 0; j < col; j++){
+			printf("%3d ", array[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+
+void initPath(position *path){
+	for(int i = 0; i < MAX_PATH_LENGTH; i++){
+		path[i].x = 0;
+		path[i].y = 0;
+	}
+}
+
+void printPath(position *path){
+	for(int i = 0; i < path_index; i++){
+		printf("(%d,%d) -> ", (path[i]).x, (path[i]).y);
+	}
+	printf("\n");
+}
+
+void append(position *path, int i, int j){
+	(path[path_index]).x = i;
+	(path[path_index]).y = j;
+	path_index++;
+}
+
+//back trace the path recursively by dp array
+void getPath(int **dp, int i, int j, position *path){
+
+	//Base Case
+	if(i==0 && j==0){
+		return append(path, i, j);
+	}
+
+	//can only come from left
+	else if(i==0) getPath(dp, i, j-1, path); 
+
+	//can only come from top
+	else if(j==0) getPath(dp, i-1, j, path);
+
+	else{
+		if(dp[i-1][j] > dp[i][j-1]){
+			getPath(dp, i - 1, j, path);
+		}
+		else{
+			getPath(dp, i, j - 1, path);
+		}
+	}
+	return append(path, i, j);;
+}
+
+
+int uniquePathsMaxProfit(int** grid, int m, int n){
+	//allocate 2D array
+	int **dp = malloc(sizeof(int *) * m);
+	for(int i = 0; i < m; i++){
+		dp[i] = malloc(sizeof(int) * n);
+	}
+	dp = initArray(dp, m, n);
+
+	dp[0][0] = 0;
+
+	//Inductive
+	for(int i = 0; i < m; i++){
+		for(int j = 0; j < n; j++){
+
+			//skip the base case
+			if(i==0 && j==0) continue;
+
+			//edge case if i > 0, j = 0, only top block can go to (i,j)
+			else if(i > 0 && j==0) dp[i][j] = grid[i][j] +  dp[i-1][j]; 
+
+			//edge case if i = 0, j > 0, only left block can go to (i,j)
+			else if(i==0 && j > 0) dp[i][j] = grid[i][j] + dp[i][j-1];
+
+			//F(i,j) = grid[i][j] + max(F(i-1,j) , F(i,j-1)) 
+			else dp[i][j] = grid[i][j] + max(dp[i-1][j] , dp[i][j-1]);
+
+			if(PRINTDPMODE){
+				print2DArray(dp, m, n);
+			}
+		}
+	}
+	int result = dp[m-1][n-1];
+
+	//find the path
+	path_index = 0;
+	initPath(path);
+	getPath(dp, m-1, n-1, path);
+	printPath(path);
+	freeMemory(dp,m);
+	return result;
+}
+
+
+int main(){
+
+	int **grid = constructGrid(3,4);
+
+	//set the profit
+	grid[0][0] = 0, grid[0][1] = 2, grid[0][2] = 2, grid[0][3] = 1;
+	grid[1][0] = 3, grid[1][1] = 1, grid[1][2] = 1, grid[1][3] = 1;
+	grid[2][0] = 4, grid[2][1] = 4, grid[2][2] = 2, grid[2][3] = 0;
+
+    printf("max profit = %d\n", uniquePathsMaxProfit(grid, 3, 4));
+
+    
+    //reset the grid
+    grid[0][0] = 0, grid[0][1] = 2, grid[0][2] = 2, grid[0][3] = 50;
+	grid[1][0] = 3, grid[1][1] = 1, grid[1][2] = 1, grid[1][3] = 100;
+	grid[2][0] = 4, grid[2][1] = 4, grid[2][2] = 2, grid[2][3] = 0;
+
+	printf("max profit = %d\n", uniquePathsMaxProfit(grid, 3, 4));
+	
+    freeMemory(grid,3);
+	return 0;
+}
+```
