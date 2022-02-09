@@ -149,16 +149,15 @@ int main(){
 	grid[1][0] = 3, grid[1][1] = 1, grid[1][2] = 1, grid[1][3] = 1;
 	grid[2][0] = 4, grid[2][1] = 4, grid[2][2] = 2, grid[2][3] = 0;
 
-    printf("max profit = %d\n", uniquePathsMaxProfit(grid, 3, 4));
+	printf("max profit = %d\n", uniquePathsMaxProfit(grid, 3, 4));
 
-    
-    //reset the grid
-    grid[0][0] = 0, grid[0][1] = 2, grid[0][2] = 2, grid[0][3] = 50;
+	//reset the grid
+	grid[0][0] = 0, grid[0][1] = 2, grid[0][2] = 2, grid[0][3] = 50;
 	grid[1][0] = 3, grid[1][1] = 1, grid[1][2] = 1, grid[1][3] = 100;
 	grid[2][0] = 4, grid[2][1] = 4, grid[2][2] = 2, grid[2][3] = 0;
 
 	printf("max profit = %d\n", uniquePathsMaxProfit(grid, 3, 4));
 	
-    freeMemory(grid,3);
+	freeMemory(grid,3);
 	return 0;
 }
