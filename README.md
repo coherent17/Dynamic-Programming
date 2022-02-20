@@ -1142,17 +1142,81 @@ int main(){
 	grid[1][0] = 3, grid[1][1] = 1, grid[1][2] = 1, grid[1][3] = 1;
 	grid[2][0] = 4, grid[2][1] = 4, grid[2][2] = 2, grid[2][3] = 0;
 
-    printf("max profit = %d\n", uniquePathsMaxProfit(grid, 3, 4));
+	printf("max profit = %d\n", uniquePathsMaxProfit(grid, 3, 4));
 
-    
-    //reset the grid
-    grid[0][0] = 0, grid[0][1] = 2, grid[0][2] = 2, grid[0][3] = 50;
+	//reset the grid
+	grid[0][0] = 0, grid[0][1] = 2, grid[0][2] = 2, grid[0][3] = 50;
 	grid[1][0] = 3, grid[1][1] = 1, grid[1][2] = 1, grid[1][3] = 100;
 	grid[2][0] = 4, grid[2][1] = 4, grid[2][2] = 2, grid[2][3] = 0;
 
 	printf("max profit = %d\n", uniquePathsMaxProfit(grid, 3, 4));
 	
-    freeMemory(grid,3);
+	freeMemory(grid,3);
+	return 0;
+}
+```
+
+## Paint Fence(Combinatorial Problem)
+There is a fence with n posts, each post can be painted with either green or blue colors.
+
+You have to paint all the posts such that no more than two adjacent fence posts have the same color.
+
+Return the total number of ways you can paint the fence.
+
+有一個以$n$個柵欄柱圍成的柵欄，要用綠色或是藍色來幫這$n$個柱子上色，限制為任一個柱子的左邊與又不能同色。問有幾種上色方法?
+
+![](https://i.imgur.com/VsGMRn0.png)
+![](https://i.imgur.com/t1LLPk0.png)
+
+
+
+
+*    1. 定義藍色為0，綠色為1
+*    2. 定義$F(i,j)$為塗$i$個柱子所需要的方法數，並且第$i$個柵欄柱為$j$這個顏色
+*    3. $F(i,j) = F(i-1,1-j) + F(i-2,1-j)$
+*    4. 所求的答案為$F(n,0) + F(n,1)$
+
+code如下:
+```c=
+#include <stdio.h>
+#include <stdlib.h>
+
+void freeMemory(int **array, int n){
+	for(int i = 0; i <= n; i++){
+		free(array[i]);
+	}
+	free(array);
+}
+
+int numWays(int n){
+	int **dp = malloc(sizeof(int *) * (n + 1));
+	for(int i = 0; i <=n; i++){
+		//store two color
+		dp[i] = malloc(sizeof(int) * 2);
+	}
+
+	//define green: 1, blue: 0
+
+	//Base Case
+	dp[1][0] = 1; //0
+	dp[1][1] = 1; //1
+	dp[2][0] = 2; //00 10
+	dp[2][1] = 2; //01 11
+
+	for(int i = 3; i <= n; i++){
+		for(int j = 0; j <= 1; j++){
+			dp[i][j] = dp[i - 1][1 - j] + dp[i - 2][1 - j];
+		}
+	}
+	int result = dp[n][0] + dp[n][1];
+	freeMemory(dp,n);
+	return result;
+}
+
+int main(){
+	printf("%d\n", numWays(3));
+	printf("%d\n", numWays(4));
+	printf("%d\n", numWays(5));
 	return 0;
 }
 ```
