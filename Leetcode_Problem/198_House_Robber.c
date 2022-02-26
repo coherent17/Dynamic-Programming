@@ -10,7 +10,7 @@ int max(int a, int b){
 
 
 //transition function
-// dp [i] = max(dp[i -1], dp[i - 2]) + nums[i]
+// dp [i] = max(dp[i -1], dp[i - 2] + nums[i])
 
 int rob(int* nums, int numsSize){
 
